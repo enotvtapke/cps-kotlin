@@ -1,7 +1,6 @@
-package cps.parserFun
+package cps.parser
 
 import cps.Result
-import cps.Result.Companion.result
 import cps.failure
 import cps.success
 
@@ -21,5 +20,3 @@ fun rule(vararg alts: Parser<String>): Parser<String> = memo(
     { i -> acc(i).orElse { p(i) } }
   }
 )
-
-fun rule1(vararg alts: Parser<String>): Parser<String> = memo { s -> result { k -> alts.forEach { p -> p(s)(k) } } }

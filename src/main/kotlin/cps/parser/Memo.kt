@@ -1,4 +1,4 @@
-package cps.parserFun
+package cps.parser
 
 import cps.Result
 import cps.Result.Companion.result
@@ -9,11 +9,6 @@ fun <T> memo(p: Parser<T>): Parser<T> {
     table.getOrPut(s) { memoResult { p(s) } }
   }
 }
-
-//fun ccc(s: String): Result<String> = rule(
-//  seq(::ccc, term("c")),
-//  term("c"),
-//)(s)
 
 fun <T> memoResult(res: () -> Result<T>): Result<T> {
   val rs = mutableListOf<T>()
