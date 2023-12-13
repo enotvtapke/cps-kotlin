@@ -1,62 +1,67 @@
 import cps.Result
 import cps.parser.*
+import java.nio.CharBuffer
+import java.nio.CharBuffer.wrap
+import kotlin.io.path.Path
+import kotlin.io.path.readText
 
 fun <T> fix(f: (Parser<T>) -> Parser<T>) = object : Parser<T> {
   private var r: Parser<T>? = null
 
-  override fun invoke(s: String): Result<T> {
+  override fun invoke(s: CharSequence): Result<Pair<CharSequence, T>> {
     if (r == null) r = f(this)
     return r!!(s)
   }
 }
 
-object C : Parser<String> {
-  private var r: Parser<String>? = null
-  override fun invoke(s: String): Result<String> {
-    if (r == null) {
-      r = rule(
-        seq(this, term("c")),
-        term("$"),
-      )
-    }
-    return r!!(s)
-  }
-}
+//object C : Parser<String> {
+//  private var r: Parser<String>? = null
+//  override fun invoke(s: String): Result<String> {
+//    if (r == null) {
+//      r = rule(
+//        seq(this, term("c")),
+//        term("$"),
+//      )
+//    }
+//    return r!!(s)
+//  }
+//}
 
 fun main() {
-  val c = seq(fix { c ->
-    rule(
-      seq(c, term("c")),
-      eps(),
-    )
-  }, term("$"))
+  runParser(
+    fix { ccc: Parser<String> ->
+      memo(((ccc bind { t -> term("c").map { "" } }) alt eps()))
+    } bind term("$"),
+    "c".repeat(100000) + "$"
+  )
 
-  val t = fix { t ->
-    rule(
-      seq(t, term("+"), term("b")),
-      seq(t, term("-"), term("b")),
-      term("a")
-    )
-  }
+  runParser(
+    fix { pali: Parser<CharSequence> ->
+      memo(
+        (term("a") bind pali bind term("a")) alt
+        (term("b") bind pali bind term("b")) alt
+        (term("c") bind pali bind term("c")) alt
+        term("d")
+      )
+    },
+    "ada" + ("a".repeat(2) + "b".repeat(42) + "c".repeat(80)).repeat(100) + "d" + ("c".repeat(80) + "b".repeat(42) + "a".repeat(2)).repeat(100)
+  )
 
-  val s = fix { s ->
-    rule(
-      seq(s, s, s),
-      seq(s, s, s),
-      term("s"),
-//      eps()
-    )
-  }
+//  runParser(
+//    fix { sss: Parser<CharSequence> ->
+//      memo(
+//        (term(""))
+//      )
+//    }
+//  )
+}
 
-//  val input = Path("/home/enotvtapke/thesis/cps-kotlin/src/main/resources/ccc_input").readText()
-//  println(input)
-
-  val input = "s".repeat(4)
+private fun <T> runParser(p: Parser<T>, input: CharSequence) {
   var m = 0
-
-  (s(input)) { res ->
+  (p(wrap(input))) { res ->
     println("Success: $res")
     m += 1
   }
-  println(m)
+  println("Num of results: $m")
 }
+
