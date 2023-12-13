@@ -42,15 +42,21 @@ fun main() {
   val s = fix { s ->
     rule(
       seq(s, s, s),
-      seq(s, s),
+      seq(s, s, s),
       term("s"),
+//      eps()
     )
   }
 
 //  val input = Path("/home/enotvtapke/thesis/cps-kotlin/src/main/resources/ccc_input").readText()
 //  println(input)
 
-  (s("ssssssssssssssssssssssssssssssssssssssssssssssssssss")) { res ->
+  val input = "s".repeat(4)
+  var m = 0
+
+  (s(input)) { res ->
     println("Success: $res")
+    m += 1
   }
+  println(m)
 }

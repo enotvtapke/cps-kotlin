@@ -20,12 +20,25 @@ fun <T> memoResult(res: () -> Result<T>): Result<T> {
       (res()) { t ->
         if (!rs.contains(t)) {
           rs += t
-          ks.forEach { it(t) }
+          var i = 0
+          val size = ks.size
+          while (i < size) {
+            ks[i](t)
+            i++
+          }
+//          for (i in 0..<ks.size) ks[i](t)
+//          ks.forEach { it(t) }
         }
       }
     } else {
       ks += k
-      rs.forEach { k(it) }
+      var i = 0
+      val size = rs.size
+      while (i < size) {
+        k(rs[i])
+        i++
+      }
+//      rs.forEach { k(it) }
     }
   }
 }
