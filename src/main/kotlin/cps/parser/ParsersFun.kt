@@ -24,6 +24,13 @@ fun interface Parser <T> {
 
 fun term(term: CharSequence): Parser<CharSequence> = Parser { s -> if (s.startsWith(term)) success(Pair(s.removePrefix(term), term)) else failure() }
 
+fun term(term: Regex): Parser<CharSequence> = Parser { s ->
+  val matcher = term.toPattern().matcher(s)
+  if (matcher.useAnchoringBounds(false).useTransparentBounds(true).region(0, s.length).lookingAt())
+    success(Pair(s.subSequence(matcher.end(), s.length), matcher.toMatchResult().group()))
+  else failure()
+}
+
 fun eps(): Parser<String> = Parser { s -> success(Pair(s, "")) }
 
 //fun seq(vararg ps: Parser<String>): Parser<String> =
