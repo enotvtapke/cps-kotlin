@@ -9,7 +9,6 @@ import cps.success
 fun interface Parser <T> {
   operator fun invoke(s: CharSequence): Result<Pair<CharSequence, T>>
 
-  fun ret(t: T): Parser<T> = Parser { s -> success(Pair(s, t)) }
 
 //  infix fun <U> map(f: (Pair<String, T>) -> Pair<String, U>): Parser<U> = Parser { s -> this(s).map(f)}
 //  infix fun <U> map(f: (T) -> U): Parser<U> = map { pair: Pair<String, T> -> Pair(pair.first, f(pair.second)) }
@@ -20,6 +19,11 @@ fun interface Parser <T> {
   infix fun <U> bind(p: Parser<U>) = Parser { s1 -> this(s1).flatMap { (s2, _) -> p(s2) } }
 
   infix fun alt(p: Parser<T>) = Parser { s -> this(s).orElse { p(s) }}
+
+  companion object {
+    fun <T> ret(t: T): Parser<T> = Parser { s -> success(Pair(s, t)) }
+    fun <T> zero(): Parser<T> = Parser { failure() }
+  }
 }
 
 fun term(term: CharSequence): Parser<CharSequence> = Parser { s -> if (s.startsWith(term)) success(Pair(s.removePrefix(term), term)) else failure() }
