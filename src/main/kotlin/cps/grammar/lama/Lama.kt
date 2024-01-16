@@ -2,8 +2,8 @@ package cps.grammar.lama
 
 import Par
 import cps.parser.Parser
-import cps.parser.Parser.Companion.ret
-import cps.parser.Parser.Companion.zero
+import cps.parser.ParserM.Companion.ret
+import cps.parser.ParserM.Companion.zero
 import cps.parser.memo
 import cps.parser.term
 

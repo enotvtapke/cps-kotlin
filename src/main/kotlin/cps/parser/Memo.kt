@@ -2,9 +2,20 @@ package cps.parser
 
 import cps.Result
 import cps.Result.Companion.result
+import java.util.HashMap
+
+fun <T, S> memom(p: ParserM<T, S>): ParserM<T, S> {
+  val table = hashMapOf<S, Result<Pair<S, T>>>()
+  return ParserM { s ->
+    table.getOrPut(s) { memoResult { p(s) } }
+  }
+}
+
+val t: HashMap<ParserM<*, CharSequence>, Map<CharSequence, Result<Pair<CharSequence, *>>>> = hashMapOf()
 
 fun <T> memo(p: Parser<T>): Parser<T> {
-  val table = hashMapOf<CharSequence, Result<Pair<CharSequence, T>>>()
+  val table = t.getOrPut(p) { hashMapOf<CharSequence, Result<Pair<CharSequence, T>>>() as Map<CharSequence, Result<Pair<CharSequence, *>>> } as HashMap<CharSequence, Result<Pair<CharSequence, T>>>
+//  val table = hashMapOf<CharSequence, Result<Pair<CharSequence, T>>>()
   return Parser { s ->
     table.getOrPut(s) { memoResult { p(s) } }
   }
