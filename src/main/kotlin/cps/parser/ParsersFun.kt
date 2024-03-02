@@ -2,6 +2,7 @@ package cps.parser
 
 import cps.Result
 import cps.failure
+import cps.parser.ParserM.Companion.ret
 import cps.success
 
 typealias Parser <T> = ParserM<T, CharSequence>
@@ -44,7 +45,9 @@ fun term(term: Regex): ParserM<CharSequence, CharSequence> = ParserM { s ->
   else failure()
 }
 
-fun eps(): ParserM<CharSequence, CharSequence> = ParserM { s -> success(Pair(s, "")) }
+fun <T, S> eps(): ParserM<T?, S> = ret(null)
+
+fun <T, S> opt(a: ParserM<T, S>) = a as ParserM<T?, S> alt eps()
 
 //fun seq(vararg ps: Parser<String>): Parser<String> =
 //  ps.reduce { acc, p ->
