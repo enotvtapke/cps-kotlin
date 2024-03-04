@@ -11,7 +11,11 @@ fun <T, S> memom(p: ParserM<T, S>): ParserM<T, S> {
   }
 }
 
-val t: HashMap<ParserM<*, CharSequence>, Map<CharSequence, Result<Pair<CharSequence, *>>>> = hashMapOf()
+var t: HashMap<ParserM<*, CharSequence>, Map<CharSequence, Result<Pair<CharSequence, *>>>> = hashMapOf()
+
+fun resetTable() {
+  t = hashMapOf()
+}
 
 fun <T> memo(p: Parser<T>): Parser<T> {
   val table = t.getOrPut(p) { hashMapOf<CharSequence, Result<Pair<CharSequence, T>>>() as Map<CharSequence, Result<Pair<CharSequence, *>>> } as HashMap<CharSequence, Result<Pair<CharSequence, T>>>
@@ -29,7 +33,6 @@ fun <T> memoResult(res: () -> Result<T>): Result<T> {
     if (ks.isEmpty()) {
       ks += k
       (res()) { t ->
-//        if (!rs.contains(t)) {
           rs += t
           var i = 0
           val size = ks.size
@@ -37,9 +40,6 @@ fun <T> memoResult(res: () -> Result<T>): Result<T> {
             ks[i](t)
             i++
           }
-//          for (i in 0..<ks.size) ks[i](t)
-//          ks.forEach { it(t) }
-//        }
       }
     } else {
       ks += k
@@ -49,7 +49,37 @@ fun <T> memoResult(res: () -> Result<T>): Result<T> {
         k(rs[i])
         i++
       }
-//      rs.forEach { k(it) }
+    }
+  }
+}
+
+fun <T> memoResultFull(res: () -> Result<T>): Result<T> {
+  val rs = mutableSetOf<T>()
+  val ks = mutableListOf<(T) -> Unit>()
+
+  return result { k ->
+    if (ks.isEmpty()) {
+      ks += k
+      (res()) { t ->
+        if (!rs.contains(t)) {
+          rs += t
+          var i = 0
+          val size = ks.size
+          while (i < size) {
+            ks[i](t)
+            i++
+          }
+        }
+      }
+    } else {
+      ks += k
+      var i = 0
+      val tmp = rs.toList()
+      val size = tmp.size
+      while (i < size) {
+        k(tmp[i])
+        i++
+      }
     }
   }
 }

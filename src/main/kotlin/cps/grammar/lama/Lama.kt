@@ -4,8 +4,8 @@ import Par
 import cps.parser.*
 import cps.parser.ParserM.Companion.ret
 import runParser
-import kotlin.io.path.Path
-import kotlin.io.path.readText
+import kotlin.io.path.*
+import kotlin.time.measureTime
 
 fun token(term: CharSequence): Parser<CharSequence> = term(term) bind { whitespace(); ret(it) }
 fun token(term: Regex): Parser<CharSequence> = term(term) bind { whitespace(); ret(it) }
@@ -122,7 +122,48 @@ object Basic : Par<Primary>() {
     )
 }
 
+fun test(iter: Int) {
+  val left = Path("src/main/resources/lamaExpr/left.txt").readText()
+  val right = Path("src/main/resources/lamaExpr/right.txt").readText()
+  val middle = Path("src/main/resources/lamaExpr/middle.txt").readText()
+
+  val logFile = Path("src/main/resources/lamaExpr/log.txt")
+  logFile.writeText("input_size time\n")
+
+  for (i in iter - 1..<iter) {
+    val full = left.repeat(i) + middle + right.repeat(i)
+    val numOfIter = 5
+    val meanTime = generateSequence {
+      measureTime {
+        check(runParser(Expr, full).size == 1)
+      }
+    }.take(numOfIter).sumOf { it.inWholeMilliseconds }.toDouble() / numOfIter
+    logFile.appendText("${full.length} $meanTime\n")
+  }
+}
+
 fun main() {
-  runParser(Expr, Path("input.txt").readText())
-//  runParser(opt(term("x")), "x")
+  test(60)
+//  val t = Path("src/main/resources/lamaExpr/middle.txt").readText()
+//  (1..2).forEach { i ->
+//    val numOfIter = 100
+//    val time = generateSequence {
+//      measureTime {
+//        runParser(Expr, Path("src/main/resources/lamaExpr/$i.txt").readText(), true)
+//      }
+//    }.take(numOfIter).sumOf { it.inWholeMilliseconds }.toDouble() / numOfIter
+//    println(time)
+//  }
+
+//  var l = t
+//  (1..30).forEach { i ->
+//    val numOfIter = 10
+//    val time = generateSequence {
+//      measureTime {
+//        runParser(Expr, l, false)
+//      }
+//    }.take(numOfIter).sumOf { it.inWholeMilliseconds }.toDouble() / numOfIter
+//    println(time)
+//    l += "+$t"
+//  }
 }

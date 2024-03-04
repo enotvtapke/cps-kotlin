@@ -147,14 +147,17 @@ fun <T, S> runParser(p: ParserM<T, S>, input: S): T? {
   return res1
 }
 
-fun <T> runParser(p: Parser<T>, input: CharSequence): List<T> {
+fun <T> runParser(p: Parser<T>, input: CharSequence, log: Boolean = false): List<T> {
+  resetTable()
   val results: MutableList<T> = mutableListOf()
   val out = Path("./out.txt")
   out.writeText("")
   (p(wrap(input))) { result ->
-    results += result.second
-    out.appendText(result.second.toString() + "\n")
+    if (result.first.isEmpty()) {
+      results += result.second
+      out.appendText(result.second.toString() + "\n")
+    }
   }
-  println("Num of results: ${results.size}")
+  if (log) println("Num of results: ${results.size}")
   return results
 }
