@@ -4,35 +4,16 @@ import Par
 import cps.parser.*
 import cps.parser.ParserM.Companion.ret
 import runParser
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.appendText
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 import kotlin.time.measureTime
 
 fun token(term: CharSequence): Parser<CharSequence> = term(term) bind { whitespace(); ret(it) }
 fun token(term: Regex): Parser<CharSequence> = term(term) bind { whitespace(); ret(it) }
 
 fun whitespace(): Parser<Unit> = term("\\s*".toRegex()).map {  }
-
-// Shallow embedding
-//fun <T, U> expr(operations: List<Parser<(T, T) -> U>>, operand: Parser<T>): Parser<U> =
-//  operations.fold(zero<U>()) { acc, op ->
-//    acc alt (operand bind { a ->
-//      op bind { action ->
-//        operand.map { b -> action(a, b) }
-//      }
-//    })
-//  }
-//
-//fun plus(): Parser<(Double, Double) -> Double> = token("+").map { { a, b -> a + b} }
-//fun minus(): Parser<(Double, Double) -> Double> = token("-").map { { a, b -> a - b} }
-//fun mul(): Parser<(Double, Double) -> Double> = token("*").map { { a, b -> a * b} }
-//fun divide(): Parser<(Double, Double) -> Double> = token("/").map { { a, b -> a / b} }
-//fun modulo(): Parser<(Double, Double) -> Double> = token("%").map { { a, b -> a % b} }
-//fun equal(): Parser<(Double, Double) -> Boolean> = token("==").map { { a, b -> a == b} }
-//fun notEqual(): Parser<(Double, Double) -> Boolean> = token("!=").map { { a, b -> a != b} }
-//fun less(): Parser<(Double, Double) -> Boolean> = token("<").map { { a, b -> a < b} }
-//fun greater(): Parser<(Double, Double) -> Boolean> = token(">").map { { a, b -> a > b} }
-//fun lessEqual(): Parser<(Double, Double) -> Boolean> = token("<=").map { { a, b -> a <= b} }
-//fun greaterEqual(): Parser<(Double, Double) -> Boolean> = token(">=").map { { a, b -> a >= b} }
 
 sealed interface Primary
 data class PrimaryConst(val v: Double): Primary {
@@ -127,11 +108,14 @@ fun test(iter: Int) {
   val right = Path("src/main/resources/lamaExpr/right.txt").readText()
   val middle = Path("src/main/resources/lamaExpr/middle.txt").readText()
 
+  val lastInputFile = Path("src/main/resources/lamaExpr/lastInput.txt")
+
   val logFile = Path("src/main/resources/lamaExpr/log.txt")
   logFile.writeText("input_size time\n")
 
-  for (i in iter - 1..<iter) {
+  for (i in 0..<iter) {
     val full = left.repeat(i) + middle + right.repeat(i)
+    lastInputFile.writeText(full)
     val numOfIter = 5
     val meanTime = generateSequence {
       measureTime {
@@ -143,7 +127,14 @@ fun test(iter: Int) {
 }
 
 fun main() {
-  test(60)
+  val input = "1" + "+1".repeat(5000)
+  val meanTime = generateSequence {
+    measureTime {
+      check(runParser(Expr, input).size == 1)
+    }
+  }.take(5).sumOf { it.inWholeMilliseconds }.toDouble() / 5
+  println(meanTime)
+//  test(100)
 //  val t = Path("src/main/resources/lamaExpr/middle.txt").readText()
 //  (1..2).forEach { i ->
 //    val numOfIter = 100

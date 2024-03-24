@@ -27,19 +27,26 @@ fun <T> memo(p: Parser<T>): Parser<T> {
 
 fun <T> memoResult(res: () -> Result<T>): Result<T> {
   val rs = mutableListOf<T>()
+//  val rs1 = mutableSetOf<T>()
   val ks = mutableListOf<(T) -> Unit>()
 
   return result { k ->
     if (ks.isEmpty()) {
       ks += k
-      (res()) { t ->
-          rs += t
-          var i = 0
-          val size = ks.size
-          while (i < size) {
-            ks[i](t)
-            i++
-          }
+      (res()) l@{ t ->
+//        if (rs1.contains(t)) {
+////          throw IllegalStateException("xex")
+//          println("xex")
+//          return@l
+//        }
+//        rs1 += t
+        rs += t
+        var i = 0
+        val size = ks.size
+        while (i < size) {
+          ks[i](t)
+          i++
+        }
       }
     } else {
       ks += k
